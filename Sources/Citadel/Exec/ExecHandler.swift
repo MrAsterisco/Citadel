@@ -130,7 +130,14 @@ final class ExecHandler: ChannelDuplexHandler {
         let stderrHandle = handler.stderrPipe.fileHandleForReading
         stderrHandle.readabilityHandler = { stderrHandle in
             do {
-                guard let data = try stderrHandle.readToEnd() else {
+              let data: Data?
+              if #available(macOS 10.15.4, *) {
+                data = try stderrHandle.readToEnd()
+              } else {
+                data = stderrHandle.readDataToEndOfFile()
+              }
+              
+                guard let data else {
                     stderrHandle.readabilityHandler = nil
                     return
                 }
